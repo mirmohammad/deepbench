@@ -39,7 +39,7 @@ model = models.resnet18(pretrained=False, num_classes=100).to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
-scheduler = optim.lr_scheduler.MultiStepLR(optimizer, [25, 50], gamma=0.1)
+
 
 def iterate(ep, mode):
     if mode == 'train':
@@ -48,9 +48,11 @@ def iterate(ep, mode):
     else:
         model.eval()
         loader = validloader
+
     num_images = 0
     run_loss = 0.0
     run_acc = 0.0
+
     monitor = tqdm(loader, desc=mode)
 
     for images, labels in monitor:
@@ -71,14 +73,10 @@ def iterate(ep, mode):
         
         monitor.set_postfix(ep=ep, loss=run_loss / num_images, acc=run_acc / num_images)
 
-    scheduler.step(epoch=ep)
 
 if __name__ == '__main__':
-
     num_epochs = 20
-
     times = np.zeros((num_epochs, 2))
-
     for epoch in range(num_epochs):
 
         train_start = time.time()
