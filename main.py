@@ -29,8 +29,8 @@ transform = transforms.Compose([
 trainset = datasets.CIFAR100(root='./data', train=True, download=args.download, transform=transform)
 validset = datasets.CIFAR100(root='./data', train=False, download=args.download, transform=transform)
 
-trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=4)
-validloader = data.DataLoader(validset, batch_size=args.batch_size, shuffle=False, num_workers=4)
+trainloader = data.DataLoader(trainset, batch_size=args.batchsize, shuffle=True, num_workers=4)
+validloader = data.DataLoader(validset, batch_size=args.batchsize, shuffle=False, num_workers=4)
 
 model = models.resnet18(pretrained=False, num_classes=100).to(device)
 
