@@ -1,3 +1,6 @@
+import argparse
+import time
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,6 +11,11 @@ from torchvision import transforms
 from torchvision import datasets
 from tqdm import tqdm
 
+parser = argparse.ArgumentParser(description="Deep Benchmark")
+parser.add_argument('--download', action='store_true')
+parser.add_argument('--batchsize', default=32, type=int)
+args = parser.parse_args()
+
 cuda = torch.cuda.is_available()
 
 device = torch.device('cuda:0' if cuda else 'cpu')
@@ -15,15 +23,14 @@ tqdm.write('CUDA is not available!' if not cuda else 'CUDA is available!')
 tqdm.write('')
 
 transform = transforms.Compose([
-    transforms.Resize(224),
     transforms.ToTensor()
 ])
 
-trainset = datasets.CIFAR100(root='./data', train=True, download=True, transform=transform)
-validset = datasets.CIFAR100(root='./data', train=False, download=True, transform=transform)
+trainset = datasets.CIFAR100(root='./data', train=True, download=args.download, transform=transform)
+validset = datasets.CIFAR100(root='./data', train=False, download=args.download, transform=transform)
 
-trainloader = data.DataLoader(trainset, batch_size=64, shuffle=True, num_workers=4)
-validloader = data.DataLoader(validset, batch_size=64, shuffle=False, num_workers=4)
+trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=4)
+validloader = data.DataLoader(validset, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
 model = models.resnet18(pretrained=False, num_classes=100).to(device)
 
@@ -65,8 +72,11 @@ def iterate(ep, mode):
 
 if __name__ == '__main__':
     for epoch in range(100):
+        start = time.time()
         iterate(epoch, 'train')
+        tqdm.write(f'Training: {time.time() - start}')
         with torch.no_grad():
+            start = time.time()
             iterate(epoch, 'valid')
+            tqdm.write(f'Validation: {time.time() - start}')
             tqdm.write('')
-
