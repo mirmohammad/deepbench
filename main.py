@@ -1,6 +1,8 @@
 import argparse
 import time
 
+import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -12,6 +14,7 @@ from torchvision import datasets
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description="Deep Benchmark")
+parser.add_argument('gpu')
 parser.add_argument('--download', action='store_true')
 parser.add_argument('--batchsize', default=32, type=int)
 args = parser.parse_args()
@@ -71,12 +74,24 @@ def iterate(ep, mode):
     scheduler.step(epoch=ep)
 
 if __name__ == '__main__':
-    for epoch in range(100):
-        start = time.time()
+
+    num_epochs = 20
+
+    times = np.zeros((num_epochs, 2))
+
+    for epoch in range(num_epochs):
+
+        train_start = time.time()
         iterate(epoch, 'train')
-        tqdm.write(f'Training: {time.time() - start}')
+        train_elapsed = time.time() - train_start
+
         with torch.no_grad():
-            start = time.time()
+            valid_start = time.time()
             iterate(epoch, 'valid')
-            tqdm.write(f'Validation: {time.time() - start}')
-            tqdm.write('')
+            valid_elapsed = time.time() - valid_start
+        
+        times[epoch] = [train_elapsed, valid_elapsed]
+
+        tqdm.write('')
+    
+    np.savetxt(f'GPU_{args.gpu}_BATCHSIZE_{args.batchsize}_TIMES.csv', times, delimiter=',')
